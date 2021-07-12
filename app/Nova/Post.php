@@ -4,6 +4,8 @@ namespace App\Nova;
 
 use Laravel\Nova\Fields\ID;
 use Illuminate\Http\Request;
+use Laravel\Nova\Fields\BelongsTo;
+use Laravel\Nova\Fields\BelongsToMany;
 use Laravel\Nova\Fields\Boolean;
 use Laravel\Nova\Fields\DateTime;
 use Laravel\Nova\Fields\Select;
@@ -25,7 +27,9 @@ class Post extends Resource
      *
      * @var string
      */
-    public static $title = 'id';
+    public static $title = 'title';
+
+    public static $globallySearchable = false;
 
     /**
      * The columns that should be searched.
@@ -33,8 +37,18 @@ class Post extends Resource
      * @var array
      */
     public static $search = [
-        'id',
+        'id', 'title', 'body'
     ];
+
+    public function title(): string
+    {
+        return $this->title . ' - ' . $this->category;
+    }
+
+    public function subtitle(): string
+    {
+        return 'Author '.$this->user->name;
+    }
 
     /**
      * Get the fields displayed by the resource.
@@ -46,15 +60,20 @@ class Post extends Resource
     {
         return [
             ID::make(__('ID'), 'id')->sortable(),
-            Text::make('Title'),
-            Trix::make('Body'),
-            DateTime::make('Publish Post At', 'publish_at')->hideFromIndex(),
-            DateTime::make('Publish Until')->hideFromIndex(),
+            Text::make('Title')->rules('required'),
+            Trix::make('Body')->rules('required'),
+            DateTime::make('Publish Post At', 'publish_at')->hideFromIndex()
+                ->rules('after_or_equal:today'),
+            DateTime::make('Publish Until')->hideFromIndex()
+                ->rules('after_or_equal:publish_at'),
             Boolean::make('Is Published'),
             Select::make('Category')->options([
                 'tutorials' => 'Tutorials',
                 'new' => 'News',
-            ])->hideWhenUpdating(),
+            ])->hideWhenUpdating()
+                ->rules('required'),
+            BelongsTo::make('User')->rules('required'),
+            BelongsToMany::make('Tags'),
         ];
     }
 
