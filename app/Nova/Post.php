@@ -2,6 +2,10 @@
 
 namespace App\Nova;
 
+use App\Nova\Actions\PublishPost;
+use App\Nova\Filters\PostCategories;
+use App\Nova\Filters\PostPublished;
+use App\Nova\Lenses\MostTags;
 use Laravel\Nova\Fields\ID;
 use Illuminate\Http\Request;
 use Laravel\Nova\Fields\BelongsTo;
@@ -28,8 +32,6 @@ class Post extends Resource
      * @var string
      */
     public static $title = 'title';
-
-    public static $globallySearchable = false;
 
     /**
      * The columns that should be searched.
@@ -69,7 +71,7 @@ class Post extends Resource
             Boolean::make('Is Published'),
             Select::make('Category')->options([
                 'tutorials' => 'Tutorials',
-                'new' => 'News',
+                'news' => 'News',
             ])->hideWhenUpdating()
                 ->rules('required'),
             BelongsTo::make('User')->rules('required'),
@@ -96,7 +98,10 @@ class Post extends Resource
      */
     public function filters(Request $request)
     {
-        return [];
+        return [
+            new PostPublished,
+            new PostCategories,
+        ];
     }
 
     /**
@@ -107,7 +112,9 @@ class Post extends Resource
      */
     public function lenses(Request $request)
     {
-        return [];
+        return [
+            new MostTags,
+        ];
     }
 
     /**
@@ -118,6 +125,8 @@ class Post extends Resource
      */
     public function actions(Request $request)
     {
-        return [];
+        return [
+            new PublishPost,
+        ];
     }
 }
