@@ -47,12 +47,12 @@ class Post extends Resource
 
     public function title(): string
     {
-        return $this->title . ' - ' . $this->category;
+        return "{$this->title} - {$this->category}";
     }
 
     public function subtitle(): string
     {
-        return 'Author '.$this->user->name;
+        return "Author {$this->user->name}";
     }
 
     /**
@@ -75,8 +75,7 @@ class Post extends Resource
             Select::make('Category')->options([
                 'tutorials' => 'Tutorials',
                 'news' => 'News',
-            ])->hideWhenUpdating()
-                ->rules('required'),
+            ])->rules('required'),
             BelongsTo::make('User')->rules('required'),
             BelongsToMany::make('Tags'),
         ];
@@ -133,11 +132,7 @@ class Post extends Resource
     public function actions(Request $request)
     {
         return [
-            (new PublishPost)->canSee(function ($request) {
-                return true;
-            })->canRun(function ($request, $post) {
-                return $post->id === 5;
-            }),
+            new PublishPost,
         ];
     }
 }
