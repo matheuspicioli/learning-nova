@@ -126,7 +126,11 @@ class Post extends Resource
     public function actions(Request $request)
     {
         return [
-            new PublishPost,
+            (new PublishPost)->canSee(function ($request) {
+                return true;
+            })->canRun(function ($request, $post) {
+                return $post->id === 5;
+            }),
         ];
     }
 }
